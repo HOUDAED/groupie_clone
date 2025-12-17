@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Salle {{.GameLabel}} – {{.Room.Code}}</title>
+    <link rel="stylesheet" href="/static/init_salle.css">
+    <link rel="icon" href="/static/hbbts.ico"/>
+</head>
+<body data-room-code="{{.Room.Code}}">
+<main class="card intro" style="max-width: 760px; margin: 40px auto;">
+    <h1>Salle {{.GameLabel}}</h1>
+    <p>Code : <strong>{{.Room.Code}}</strong></p>
+    <p>Joueurs : <strong>{{len .Players}}</strong> / {{.Room.MaxPlayers}}</p>
+    <p>Paramètres : {{.Room.Rounds}} manches · {{.Room.TimePerRound}}s / manche</p>
+
+    <section class="card" style="margin-top: 24px;">
+        <h2>Participants</h2>
+        <ul class="players-list">
+            {{range .Players}}
+            <li class="player-item">
+                <div class="player-left">
+                    <div class="player-name">{{.Pseudo}}</div>
+                    <div class="player-tags">
+                        {{if .IsAdmin}}<span class="tag tag-admin">Admin</span>{{end}}
+                        {{if .IsReady}}<span class="tag tag-ready">Prêt</span>{{end}}
+                    </div>
+                </div>
+
+                <div class="player-right">
+                    <span class="player-score-label">Score</span>
+                    <span class="player-score">{{.Score}}</span>
+                </div>
+            </li>
+            {{else}}
+            <li class="player-empty">Aucun joueur connecté.</li>
+            {{end}}
+        </ul>
+    </section>
+
+    {{if .IsAdmin}}
+    <form action="/salle/{{.Room.Code}}/config" method="get" class="form-actions" style="margin-top: 18px;">
+        <button type="submit">Configurer</button>
+    </form>
+    {{end}}
+
+    {{if eq (printf "%s" .Room.Type) "blindtest"}}
+    <p style="margin-top: 12px;">
+        Playlist : <strong>{{if .BlindtestPlaylist}}{{.BlindtestPlaylist}}{{else}}Non définie{{end}}</strong>
+    </p>
+    {{end}}
+
+    {{if eq (printf "%s" .Room.Type) "petit_bac"}}
+    <p style="margin-top: 12px;">Catégories :</p>
+    <ul style="margin: 10px 0 0; padding-left: 18px; text-align: left;">
+        {{if gt (len .PetitBacCategories) 0}}
+            {{range .PetitBacCategories}}
+            <li>{{.Name}}</li>
+            {{end}}
+        {{else}}
+            <li>Non définies</li>
+        {{end}}
+    </ul>
+    {{end}}
+
+    {{if and .IsAdmin (eq (printf "%s" .Room.Type) "blindtest")}}
+    <form action="/salle/{{.Room.Code}}/start" method="post" class="form-actions" style="margin-top: 10px;">
+      <button type="submit">Commencer le jeu</button>
+    </form>
+    {{end}}
+    {{if and .IsAdmin (eq (printf "%s" .Room.Type) "petit_bac")}}
+    <form action="/salle/{{.Room.Code}}/start" method="post" class="form-actions" style="margin-top: 10px;">
+      <button type="submit">Commencer le jeu</button>
+    </form>
+    {{end}}
+
+    <form action="/salle/{{.Room.Code}}/leave" method="post" class="form-actions" style="margin-top: 12px;">
+      <button type="submit">Quitter la salle</button>
+    </form>
+    <div class="form-actions" style="margin-top: 12px;">
+   <a href="/dashboard" style="text-decoration:none;">
+    <button type="button">Changer de jeu</button>
+   </a>
+</div>
+</main>
+<script src="/static/ws_room.js" defer></script>
+</body>
+</html>
